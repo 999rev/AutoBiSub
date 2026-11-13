@@ -50,8 +50,10 @@ def process_file(
         segments = parse_srt(input_path)
     else:
         asr = LocalWhisperASR(asr_cfg)
-        with console.status("[bold green]正在提取音轨并执行本地语音识别...[/bold green]"):
-            with temporary_wav(input_path) as wav_path:
+        with (
+            console.status("[bold green]正在提取音轨并执行本地语音识别...[/bold green]"),
+            temporary_wav(input_path) as wav_path,
+        ):
                 segments = asr.transcribe(wav_path)
 
     if not segments:
@@ -142,8 +144,8 @@ def run(
 @app.command()
 def watch(
     watch_dir: Path = typer.Argument(..., help="需要监听的视频/音频目录"),
-    db_path: Path = typer.Option(
-        Path.home() / ".subsync" / "state.db",
+    db_path: Path | None = typer.Option(
+        None,
         "--db",
         help="SQLite 去重状态数据库路径",
     ),
@@ -211,7 +213,7 @@ def watch(
 
     watch_directory(
         watch_dir=watch_dir,
-        db_path=db_path,
+        db_path=db_path or (Path.home() / ".subsync" / "state.db"),
         process_callback=_callback,
         recursive=recursive,
         scan_existing=scan_existing,

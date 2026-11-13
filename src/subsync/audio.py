@@ -53,8 +53,8 @@ def extract_audio(
 
     result = subprocess.run(
         cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
+        check=False,
         text=True,
         encoding="utf-8",
         errors="replace",

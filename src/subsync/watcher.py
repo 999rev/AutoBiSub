@@ -180,8 +180,8 @@ def watch_directory(
             try:
                 process_callback(target_path)
                 store.mark(file_hash, target_path, status="success")
-            except Exception as exc:
-                logger.exception("处理文件失败 %s: %s", target_path.name, exc)
+            except Exception:
+                logger.exception("处理文件失败 %s", target_path.name)
                 store.mark(file_hash, target_path, status="failed")
             finally:
                 task_queue.task_done()
