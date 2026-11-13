@@ -1,0 +1,12 @@
+services:
+  subsync:
+    build: .
+    container_name: subsync-watcher
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./media:/media
+      - ./models_cache:/app/.cache/huggingface
+      - ./state:/root/.subsync
+    command: ["watch", "/media", "--scan-existing", "-m", "small"]
