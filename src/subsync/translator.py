@@ -44,7 +44,10 @@ def _strip_code_fences(raw: str) -> str:
 class AsyncSubtitleTranslator:
     def __init__(self, config: TranslatorConfig) -> None:
         self.cfg = config
-        self._semaphore = asyncio.Semaphore(config.max_concurrency)
+        if "localhost" in config.base_url or "127.0.0.1" in config.base_url:
+            self.cfg.max_concurrency = 1
+            self.cfg.timeout = max(self.cfg.timeout, 180.0)
+        self._semaphore = asyncio.Semaphore(self.cfg.max_concurrency)
 
     async def translate_segments(
         self, segments: list[SubtitleSegment]
@@ -169,7 +172,7 @@ class AsyncSubtitleTranslator:
                     "翻译请求失败 (第 %d/%d 次): %s，%.1fs 后重试",
                     attempt,
                     self.cfg.max_retries,
-                    exc,
+                    f"{type(exc).__name__}: {exc}",
                     wait_seconds,
                 )
                 await asyncio.sleep(wait_seconds)

@@ -38,6 +38,7 @@ def process_file(
     trans_cfg: TranslatorConfig,
     order: Literal["translated_first", "original_first"],
     skip_translate: bool,
+    audio_track: int | None = None,
 ) -> Path:
     """处理单个媒体或 SRT 文件的核心流水线"""
     if not input_path.exists():
@@ -52,7 +53,7 @@ def process_file(
         asr = LocalWhisperASR(asr_cfg)
         with (
             console.status("[bold green]正在提取音轨并执行本地语音识别...[/bold green]"),
-            temporary_wav(input_path) as wav_path,
+            temporary_wav(input_path, audio_stream_index=audio_track, language=asr_cfg.language) as wav_path,
         ):
                 segments = asr.transcribe(wav_path)
 
@@ -82,6 +83,7 @@ def run(
     device: str = typer.Option("cpu", "--device", help="推理设备: cpu / cuda / auto"),
     compute_type: str = typer.Option("int8", "--compute-type", help="量化精度: int8 / float16"),
     language: str | None = typer.Option(None, "-l", "--lang", help="源音频语种，如 en / ja"),
+    audio_track: int | None = typer.Option(None, "--track", help="Audio stream index (0-based)"),
     target_lang: str = typer.Option("简体中文", "--target-lang", help="目标翻译语言"),
     llm_model: str = typer.Option(
         os.getenv("SUBSYNC_LLM_MODEL", "gpt-4o-mini"),
@@ -135,6 +137,7 @@ def run(
             trans_cfg=trans_cfg,
             order=order,
             skip_translate=skip_translate,
+            audio_track=audio_track,
         )
     except Exception as exc:
         console.print(f"[bold red]处理失败:[/bold red] {exc}")
@@ -157,6 +160,7 @@ def watch(
     device: str = typer.Option("cpu", "--device", help="推理设备: cpu / cuda / auto"),
     compute_type: str = typer.Option("int8", "--compute-type", help="量化精度: int8 / float16"),
     language: str | None = typer.Option(None, "-l", "--lang", help="源音频语种，如 en / ja"),
+    audio_track: int | None = typer.Option(None, "--track", help="Audio stream index (0-based)"),
     target_lang: str = typer.Option("简体中文", "--target-lang", help="目标翻译语言"),
     llm_model: str = typer.Option(
         os.getenv("SUBSYNC_LLM_MODEL", "gpt-4o-mini"),
@@ -209,6 +213,7 @@ def watch(
             trans_cfg=trans_cfg,
             order=order,
             skip_translate=False,
+            audio_track=audio_track,
         )
 
     watch_directory(

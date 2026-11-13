@@ -18,6 +18,7 @@ class ASRConfig:
     beam_size: int = 5
     vad_filter: bool = True
     min_silence_duration_ms: int = 500
+    initial_prompt: str = "Uncensored casual American comedy dialogue with slang and profanity."
 
 
 class LocalWhisperASR:
@@ -51,8 +52,10 @@ class LocalWhisperASR:
             str(audio_path),
             language=self.cfg.language,
             beam_size=self.cfg.beam_size,
+            initial_prompt=self.cfg.initial_prompt,
+            word_timestamps=True,
             vad_filter=self.cfg.vad_filter,
-            vad_parameters={"min_silence_duration_ms": self.cfg.min_silence_duration_ms},
+            vad_parameters={"min_silence_duration_ms": self.cfg.min_silence_duration_ms, "speech_pad_ms": 150},
         )
         logger.info(
             "检测到语种: %s (置信度 %.2f)",
@@ -69,8 +72,8 @@ class LocalWhisperASR:
             segments.append(
                 SubtitleSegment(
                     index=idx,
-                    start=round(seg.start, 3),
-                    end=round(seg.end, 3),
+                    start=round(seg.words[0].start if getattr(seg, "words", None) else seg.start, 3),
+                    end=round(seg.words[-1].end if getattr(seg, "words", None) else seg.end, 3),
                     text=text,
                 )
             )
