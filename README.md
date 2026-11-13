@@ -1,4 +1,4 @@
-# subsync
+# AutoBiSub
 
 基于 `faster-whisper` 本地语音识别与异步 LLM 并发翻译的音视频双语字幕自动化工具（支持单文件转写、已有 `.srt` 直译与后台目录监听）。
 
